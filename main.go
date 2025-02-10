@@ -1,39 +1,35 @@
 package main
 
 import (
-	"database/sql"
-	"fmt"
-	"log"
-	// "net/http"
-
-	"github.com/gin-gonic/gin"
-	_ "github.com/lib/pq"
+	"gorm.io/gorm"
+	"gorm.io/driver/postgres"
 )
 
-const (
-	host = "localhost"
-	port = 5432
-	user = "your_user"
-	password = "your_password"
-	dbname = "your_name"
-)
+//создание таблицы пользователей
+type User struct {
+    gorm.Model
+    Username string `gorm:"not null;unique"`
+    Email string `gorm:"not null;unique"`
+    Password string `gorm:"not null"`
+    Articles []Article
+}
+
+//создание таблицы статей
+type Article struct {
+    gorm.Model
+    Title string `gorm:"not null"`
+    Content string `gorm:"not null"`
+    UserID uint `gorm:"not null"`
+    User User `gorm:"foreignKey:UserID"`
+}
 
 func main() {
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
+    dsn := "host=localhost user=gorm password=gorm dbname=gorm port=5432 sslmode=disable"
+    db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+    if err != nil {
+        panic("Не удалось присоебиниться к бд")
+    }
 
-	db, err := sql.Open("postgres", psqlInfo)
-	if err != nil {
-		log.Fatalf("Ошибка Подключения к бд: %v", err)
-	}
-	defer db.Close()
+    db.AutoMigrate(&User{}, &Article{})
 
-	err = db.Ping()
-	if err != nil {
-		log.Fatalf("Ошибка при проверке подключения: %v", err)
-	}
-
-	r := gin.Default()
-
-	r.Run(":8080")
 }
