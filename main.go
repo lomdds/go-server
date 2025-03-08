@@ -30,6 +30,17 @@ func main() {
         panic("Не удалось присоебиниться к бд")
     }
 
+    user := User{Username: "John Doe", Email: "ololo@gmail.com", Password: "ololo123"}
+    result := db.Create(&user)
+
+    if result.Error != nil {
+        panic("Ошибка")
+    }
+
+    db.Model(&user).Updates(User{Username: "Mussolini", Email: "Italy@gmail.com", Password: "123"})
+
+    db.Delete(&user, 1)
+
     db.AutoMigrate(&User{}, &Article{})
 
 }
