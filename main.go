@@ -1,46 +1,40 @@
 package main
 
 import (
+    "log"
+    "go-server/models"
 	"gorm.io/gorm"
 	"gorm.io/driver/postgres"
 )
-
-//создание таблицы пользователей
-type User struct {
-    gorm.Model
-    Username string `gorm:"not null;unique"`
-    Email string `gorm:"not null;unique"`
-    Password string `gorm:"not null"`
-    Articles []Article
-}
-
-//создание таблицы статей
-type Article struct {
-    gorm.Model
-    Title string `gorm:"not null"`
-    Content string `gorm:"not null"`
-    UserID uint `gorm:"not null"`
-    User User `gorm:"foreignKey:UserID"`
-}
 
 func main() {
     dsn := "host=localhost user=gorm password=gorm dbname=gorm port=5432 sslmode=disable"
     db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
     if err != nil {
-        panic("Не удалось присоебиниться к бд")
+        log.Fatal("Не удалось подключиться к БД:", err)
     }
 
-    user := User{Username: "John Doe", Email: "ololo@gmail.com", Password: "ololo123"}
-    result := db.Create(&user)
-
-    if result.Error != nil {
-        panic("Ошибка")
+    // Пример создания пользователя
+    user := models.User{
+        Username: "John Doe",
+        Email:    "ololo@gmail.com",
+        Password: "ololo123",
+    }
+    if err := db.Create(&user).Error; err != nil {
+        log.Fatal("Ошибка создания пользователя:", err)
     }
 
-    db.Model(&user).Updates(User{Username: "Mussolini", Email: "Italy@gmail.com", Password: "123"})
+    // Обновление пользователя
+    if err := db.Model(&user).Updates(models.User{
+        Username: "Mussolini",
+        Email:    "Italy@gmail.com",
+        Password: "123",
+    }).Error; err != nil {
+        log.Fatal("Ошибка обновления:", err)
+    }
 
-    db.Delete(&user, 1)
-
-    db.AutoMigrate(&User{}, &Article{})
-
+    // Удаление пользователя
+    if err := db.Delete(&user).Error; err != nil {
+        log.Fatal("Ошибка удаления:", err)
+    }
 }
