@@ -28,7 +28,7 @@ var StatusHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request
 
 var ArticlesHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     var articles []models.Article
-    if err := db.Find(&articles).Error; err != nil {
+    if err := db.Preload("User").Find(&articles).Error; err != nil {
         http.Error(w, "Failed to get articles", http.StatusInternalServerError)
         return
     }
@@ -95,6 +95,16 @@ func main() {
 	err = db.AutoMigrate(&models.User{})
 	if err != nil {
 		log.Fatal("Ошибка миграции:", err)
+	}
+
+	newArticle := models.Article{
+		Title:   "Название статьи",
+		Content: "Содержание статьи",
+		UserID:  3,
+	}
+	
+	if err := db.Create(&newArticle).Error; err != nil {
+		log.Fatal(":(")
 	}
 
 	r := mux.NewRouter()
