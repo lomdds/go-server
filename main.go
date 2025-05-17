@@ -26,16 +26,16 @@ var StatusHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request
 	w.Write([]byte("API is up and running"))
 })
 
-var ArticlesHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-    var articles []models.Article
-    if err := db.Preload("User").Find(&articles).Error; err != nil {
-        http.Error(w, "Failed to get articles", http.StatusInternalServerError)
+var ExamPreparationCourseHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    var ExamPreparationCourse []models.ExamPreparationCourse
+    if err := db.Preload("User").Find(&ExamPreparationCourse).Error; err != nil {
+        http.Error(w, "Failed to get course", http.StatusInternalServerError)
         return
     }
 
-    payload, err := json.Marshal(articles)
+    payload, err := json.Marshal(ExamPreparationCourse)
     if err != nil {
-        http.Error(w, "Failed to marshal articles", http.StatusInternalServerError)
+        http.Error(w, "Failed to marshal course", http.StatusInternalServerError)
         return
     }
     
@@ -97,13 +97,17 @@ func main() {
 		log.Fatal("Ошибка миграции:", err)
 	}
 
-	newArticle := models.Article{
-		Title:   "Название статьи",
-		Content: "Содержание статьи",
+	newExamPreparationCourse := models.ExamPreparationCourse{
+		Subject:   "Математика",
 		UserID:  3,
+		Relevance: 2026,
+		NumberOfClasses: 65,
+		ContactTheTeacher: true,
+		Individuality: false,
+		Price: 48930,
 	}
 	
-	if err := db.Create(&newArticle).Error; err != nil {
+	if err := db.Create(&newExamPreparationCourse).Error; err != nil {
 		log.Fatal(":(")
 	}
 
@@ -114,7 +118,7 @@ func main() {
 
 	r.Handle("/status", StatusHandler).Methods("GET")
 	r.Handle("/get-token", http.HandlerFunc(GetTokenHandler)).Methods("GET")
-	r.Handle("/articles", jwtMiddleware.Handler(ArticlesHandler)).Methods("GET")
+	r.Handle("/courses", jwtMiddleware.Handler(ExamPreparationCourseHandler)).Methods("GET")
 
 	log.Println("Server starting on :3000")
 	http.ListenAndServe(":3000", handlers.LoggingHandler(os.Stdout, r))

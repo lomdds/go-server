@@ -1,2 +1,14 @@
 создать
 migrate create -ext sql -dir директория -seq название (migrate create -ext sql -dir migrations -seq create_users_table)
+
+migrate -path migrations -database "postgres://gorm:gorm@localhost:5432/gorm?sslmode=disable" up
+
+свойства карточки каталога курсов подготовки к ЕГЭ
+id
+имя преподователя
+предмет
+на какой год расчитан
+колличество занятий 
+возможность связи с преподователем
+индивидульность
+цена
